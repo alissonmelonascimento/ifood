@@ -17,7 +17,7 @@ public class PedidoRealizadoIncoming {
 
     @Incoming("pedidos")
     public void lerPedidos(PedidoRealizadoDTO dto) {
-        System.out.println("-----------------");
+        System.out.println("-------Recebendo Pedido----------");
         System.out.println(dto);
     	
         Pedido p = new Pedido();

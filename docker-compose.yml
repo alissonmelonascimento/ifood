@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.7"
 services:
   postgres_cadastro:
     container_name: postgres_cadastro_ifood
@@ -19,7 +19,7 @@ services:
   keycloak_ifood:
     container_name: keycloak_ifood
     image: jboss/keycloak:9.0.2
-    environment:
+    environment: 
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: admin
     ports:
@@ -36,35 +36,39 @@ services:
       - "14268:14268"
       - "14250:14250"
       - "9411:9411"
+  
   prometheus_ifood:
     container_name: prometheus_ifood
     image: prometheus-ifood
     ports:
       - 9090:9090
+    
   grafana_ifood:
     container_name: grafana_ifood
     image: grafana/grafana:6.5.0
     ports:
       - 3000:3000
+    
   artemis_ifood:
     container_name: artemis_ifood
     image: vromero/activemq-artemis:2.11.0
-    environment:
-      ARTEMIS_USERNAME: admin
-      ARTEMIS_PASSWORD: admin
     ports:
       - "8161:8161"
       - "61616:61616"
       - "5672:5672"
+    environment: 
+      ARTEMIS_USERNAME: admin
+      ARTEMIS_PASSWORD: admin
+      
   mongodb_ifood:
     container_name: mongodb_ifood
-    image: mongo:4.4.0-bionic
-    environment:
+    image: mongo:4.2.5-bionic
+    ports:
+      - "27017:27017"
+    environment: 
       MONGO_INITDB_ROOT_USERNAME: pedido
       MONGO_INITDB_ROOT_PASSWORD: pedido
       MONGO_INITDB_DATABASE: pedido
-    ports:
-      - "27017:27017"
       
   zookeeper:
     container_name: zookeeper_container
@@ -82,26 +86,33 @@ services:
      - zookeeper
     environment:
      - ZOOKEEPER_CONNECT=zookeeper:2181
-     - ADVERTISED_LISTENERS=PLAINTEXT://192.168.13.1:9092     
-#     - ADVERTISED_LISTENERS=PLAINTEXT://172.18.0.11:9092
-#     - ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
-#     - LISTENERS=PLAINTEXT://0.0.0.0:9092
+     - ADVERTISED_LISTENERS=PLAINTEXT://MEU_IP:9092 
      
   kafdrop:
     container_name: kafdrop_container
     image: obsidiandynamics/kafdrop:3.24.0
     environment:
        KAFKA_BROKERCONNECT: kafka:9092
+       
     ports:
      - 9000:9000
     depends_on:
       - kafka
-      
+  
+  # se ocorrer [1]: max virtual memory areas vm.max_map_count [65530] is too low, 
+  # increase to at least [262144]
+  # 
+  # No Linux:
+  # sudo sysctl -w vm.max_map_count=262144
+  #
+  # No Windows digite os comandos:
+  # wsl -d docker-desktop
+  # sysctl -w vm.max_map_count=262144
   elastic:
     container_name: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
     ports:
-      - "9200:9200" 
+      - "9200:9200"
     environment:
       - node.name=es01
       - cluster.name=es-docker-cluster
@@ -111,12 +122,26 @@ services:
     ulimits:
       memlock:
         soft: -1
-        hard: -1        
+        hard: -1
 
   kibana:
     container_name: kibana
     image: docker.elastic.co/kibana/kibana:7.6.2
     ports:
      - "5601:5601"    
+    environment:
+      ELASTICSEARCH_HOSTS: http://localhost:9200
+      
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash-oss:6.8.2
+    volumes:
+      - source: ./pipelines
+        target: /usr/share/logstash/pipeline
+        type: bind
+    ports:
+      - "12201:12201/udp"
+      - "5000:5000"
+      - "9600:9600"
     depends_on:
       - elastic
