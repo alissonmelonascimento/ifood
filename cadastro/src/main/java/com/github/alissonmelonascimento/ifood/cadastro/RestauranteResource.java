@@ -103,6 +103,9 @@ public class RestauranteResource {
 		
 		Jsonb create = JsonbBuilder.create();
 		String json = create.toJson(restaurante);
+		
+		// pode comentar a linha abaixo, pois o connect(debezium), que esta monitorando
+		// as entradas do banco de dados, enviaria para o kafka
 		emitter.send(json);
 		
 		return Response.status(Status.CREATED).build();
