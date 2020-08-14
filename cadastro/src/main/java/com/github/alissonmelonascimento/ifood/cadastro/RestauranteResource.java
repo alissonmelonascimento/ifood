@@ -72,9 +72,13 @@ public class RestauranteResource {
 	@Inject
 	PratoMapper pratoMapper;
 	
+    //@Inject
+    //@Channel("restaurantes")
+    //Emitter<String> emitter;
+	
     @Inject
     @Channel("restaurantes")
-    Emitter<String> emitter;
+    Emitter<Restaurante> emitter;	
     
     @Inject
     JsonWebToken jwt;//permite pegar qq campo do token
@@ -101,12 +105,15 @@ public class RestauranteResource {
 		restaurante.proprietario = sub;
 		restaurante.persist();
 		
-		Jsonb create = JsonbBuilder.create();
-		String json = create.toJson(restaurante);
+		//Comentado, pois na versao 1.4.1 do quarkus nao precisa mais converter p json
+		//Jsonb create = JsonbBuilder.create();
+		//String json = create.toJson(restaurante);
 		
 		// pode comentar a linha abaixo, pois o connect(debezium), que esta monitorando
 		// as entradas do banco de dados, enviaria para o kafka
-		emitter.send(json);
+		//emitter.send(json);
+		
+		emitter.send(restaurante);
 		
 		return Response.status(Status.CREATED).build();
 	}
