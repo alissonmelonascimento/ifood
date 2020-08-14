@@ -1,7 +1,6 @@
 package com.github.alissonmelonascimento.ifood.cadastro.dto;
 
 import javax.validation.ConstraintValidatorContext;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -19,10 +18,6 @@ public class AdicionarRestauranteDTO implements DTO{
 	@NotNull
 	@Pattern(regexp = "[0-9]{2}\\.[0-9]{3}\\.[0-9]{3}\\/[0-9]{4}\\-[0-9]{2}")
     public String cnpj;
-    
-    @NotNull
-    @NotEmpty
-    public String proprietario;
     
     public LocalizacaoDTO localizacao;
     

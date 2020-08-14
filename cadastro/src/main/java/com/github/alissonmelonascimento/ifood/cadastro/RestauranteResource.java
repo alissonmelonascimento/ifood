@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -26,6 +27,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.eclipse.microprofile.jwt.Claim;
+import org.eclipse.microprofile.jwt.Claims;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.SimplyTimed;
 import org.eclipse.microprofile.metrics.annotation.Timed;
@@ -71,6 +75,13 @@ public class RestauranteResource {
     @Inject
     @Channel("restaurantes")
     Emitter<String> emitter;
+    
+    @Inject
+    JsonWebToken jwt;//permite pegar qq campo do token
+
+    @Inject
+    @Claim(standard = Claims.sub)
+    String sub;//injeta um campo expecifico do toke. nesse caso, o nome do usuario
 	
 	@GET
 	@Counted(name = "Quantidade lista todos os restaurantes")
@@ -87,6 +98,7 @@ public class RestauranteResource {
     @APIResponse(responseCode = "400", content = @Content(schema = @Schema(allOf = ConstraintViolationResponse.class)))
 	public Response insert(@Valid AdicionarRestauranteDTO dto) {
 		Restaurante restaurante = restauranteMapper.toRestaurante(dto);
+		restaurante.proprietario = sub;
 		restaurante.persist();
 		
 		Jsonb create = JsonbBuilder.create();
@@ -107,6 +119,11 @@ public class RestauranteResource {
 		}
 		
 		Restaurante restaurante = opt.get();
+		
+        if (!restaurante.proprietario.equals(sub)) {
+            throw new ForbiddenException();
+        }		
+		
 		restauranteMapper.toRestaurante(dto, restaurante);
 		
 		restaurante.persist();
@@ -121,7 +138,12 @@ public class RestauranteResource {
 		opt.ifPresentOrElse(Restaurante::delete, () -> {
 			throw new NotFoundException();
 		});
+		
+        if (!opt.get().proprietario.equals(sub)) {
+            throw new ForbiddenException();
+        }
 
+        opt.get().delete();
 	}
 	
 	//================ pratos =======================
