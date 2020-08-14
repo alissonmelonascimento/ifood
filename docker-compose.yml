@@ -119,6 +119,8 @@ services:
       - cluster.initial_master_nodes=es01
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - network.host=127.0.0.1
+      - http.host=0.0.0.0
     ulimits:
       memlock:
         soft: -1
@@ -130,11 +132,14 @@ services:
     ports:
      - "5601:5601"
     environment:
-      ELASTICSEARCH_HOSTS: http://host.docker.internal:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
       
   logstash:
     container_name: logstash
     image: docker.elastic.co/logstash/logstash-oss:6.8.2
+    ports:
+      - "12201:12201/udp"
+      - "5044:5044"    
     volumes:
       - source: ./pipelines
         target: /usr/share/logstash/pipeline
