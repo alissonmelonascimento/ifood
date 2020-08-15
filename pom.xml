@@ -38,6 +38,8 @@
 		<module>cadastro</module>
 		<module>marketplace</module>
 		<module>pedido</module>
+		<module>picocli</module>
+		<module>command-mode</module>
 	</modules>
 
 </project>
